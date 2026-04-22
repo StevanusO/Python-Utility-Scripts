@@ -1,0 +1,23 @@
+# python virtual environment
+.venv/
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+# Python bytecode
+__pycache__/
+*.pyc
+pyproject.toml
+uv.lock
+
+# Github Agent Skills
+.agents/
+.vscode/
+# Distribution
+build/
+dist/
+*.egg-info/
+# pytest cache
+.pytest_cache/
+# logs
+*.log
+# temp files
+*~

@@ -1,0 +1,9 @@
+numpy
+pandas
+lxml
+ipykernel
+jupyter
+matplotlib
+seaborn
+scikit-learn
+plotly
