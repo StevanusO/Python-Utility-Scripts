@@ -508,33 +508,50 @@ def plot_bar_counts(df: pd.DataFrame, column: str, top_n: int = 20, figsize: tup
         plt.show()
 
 
-def init_viz(style: str = "seaborn", figsize: tuple = (8, 6)) -> None:
-    """Init plotting defaults for seaborn/matplotlib/plotly."""
-    import matplotlib.pyplot as plt
+def init_viz(style: str = "seaborn", figsize: tuple = (10, 6), dpi: int = 150) -> None:
+    # Matplotlib Global Config
+    plt.rcParams.update({
+        "figure.figsize": figsize,
+        "figure.dpi": dpi,
+        "savefig.dpi": 300,
+        "font.family": "sans-serif",
+        "font.sans-serif": ["Arial", "Helvetica", "Times New Roman", "Georgia", "serif"],
+        "text.usetex": False,
+        # Grid
+        "axes.grid": True,
+        "grid.color": "black",
+        "grid.alpha": 0.12,
+        "grid.linestyle": "--",
+        "grid.linewidth": 0.8,
+        # Axes
+        "axes.edgecolor": "black",
+        "axes.linewidth": 1.2,
+        "axes.labelweight": "normal",
+        "axes.titlesize": 14,
+        "axes.labelsize": 11,
+        
+        "axes.spines.top": False,
+        "axes.spines.right": False,
+    })
 
-    try:
-        import seaborn as sns
-    except Exception:
-        sns = None
-
-    if style == "seaborn" and sns is not None:
-        sns.set_theme()
-    elif style == "matplotlib":
+    # Seaborn Config
+    if style == "seaborn":
         try:
-            plt.style.use("classic")
-        except Exception:
+            import seaborn as sns
+            
+            sns.set_style("white", {"axes.grid": True, "grid.color": "black", "grid.alpha": 0.12})
+            sns.set_palette("colorblind")
+            sns.set_context("paper")
+        except ImportError:
             pass
-
-    if style == "plotly":
+            
+    # Plotly Config
+    elif style == "plotly":
         try:
             import plotly.io as pio
-
             pio.templates.default = "plotly_white"
-        except Exception:
+        except ImportError:
             pass
-
-    plt.rcParams["figure.figsize"] = figsize
-
 
 if __name__ == "__main__":
     # quick runnable example
