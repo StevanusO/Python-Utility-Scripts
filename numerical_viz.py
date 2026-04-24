@@ -1,4 +1,5 @@
 import pandas as pd
+from scipy import stats
 from typing import Optional, List
 
 def numerical_basic(df: pd.DataFrame(), columns: Optional[List[str]] = None) -> pd.DataFrame:
