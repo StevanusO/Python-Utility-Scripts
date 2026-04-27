@@ -8,9 +8,6 @@ def init_viz(style: str = "seaborn", figsize: tuple = (10, 6), dpi: int = 150) -
         "figure.figsize": figsize,
         "figure.dpi": dpi,
         "savefig.dpi": 300,
-        "font.family": "sans-serif",
-        "font.sans-serif": ["Arial", "Helvetica", "Times New Roman", "Georgia", "serif"],
-        "text.usetex": False,
         # Grid
         "axes.grid": True,
         "grid.color": "black",
