@@ -2,10 +2,9 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-
 from typing import Optional, List
 
-def plot_categorical_distribution(df: pd.DataFrame(), columns: Optional[List[str]] = None, target_col: Optional[str] = None, n_cols:int =3) -> None:
+def categorical_countplot(df: pd.DataFrame(), columns: Optional[List[str]] = None, target_col: Optional[str] = None, n_cols:int =3) -> None:
     
     if columns is None:
         print("[!] Columns is empty, automatically select categorical based on df")
