@@ -1,9 +1,12 @@
 import pandas as pd
 from scipy import stats
 import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
 from typing import Optional, List
 
 def numerical_basic(df: pd.DataFrame(), columns: Optional[List[str]] = None) -> pd.DataFrame:
+    """Summarize numeric columns with basic stats and outlier info."""
     if columns is None:
         print("[!] Columns is empty, automatically select numerical based on df")
         columns = df.select_dtypes(include=["number"]).columns.tolist()
@@ -15,10 +18,12 @@ def numerical_basic(df: pd.DataFrame(), columns: Optional[List[str]] = None) -> 
     num_describe = df_num.describe(percentiles=[0.25, 0.5, 0.75]) # Get Q1, Q2, and Q3
     
     def _skew(series: pd.Series) -> float:
+        """Compute sample skew for a series."""
         arr = series.dropna().values
         return float(stats.skew(arr, bias=False)) if arr.size > 0 else np.nan
 
     def _kurt(series: pd.Series) -> float:
+        """Compute sample kurtosis (Fisher) for a series."""
         arr = series.dropna().values
         return float(stats.kurtosis(arr, bias=False, fisher=True)) if arr.size > 0 else np.nan
 
@@ -129,3 +134,127 @@ def print_numerical_basic(df: pd.DataFrame, columns: Optional[List[str]] = None)
         print(f"Detected Outliers: {int(row['outlier_count'])} ({row['outlier_pct']:.2f}%)")
         print("-" * 60)
     
+def plot_numeric_vs_categorical(df: pd.DataFrame, features: list, target: str, kind: str = "box", ordering: list = None, max_cols: int = 3, figsize: tuple = (15, 5), show_stats: bool = False):
+    """Plot numeric features against a categorical target (box/violin/kde)."""
+    if target not in df.columns:
+        raise ValueError(f"Target '{target}' not found")
+
+    df_plot = df.copy()
+
+    if ordering is not None:
+        df_plot[target] = pd.Categorical(
+            df_plot[target],
+            categories=ordering,
+            ordered=True
+        )
+
+    numeric_cols = [
+        col for col in features
+        if pd.api.types.is_numeric_dtype(df_plot[col])
+    ]
+
+    if not numeric_cols:
+        raise ValueError("No numeric features provided")
+
+    n = len(numeric_cols)
+    rows = int(np.ceil(n / max_cols))
+
+    fig, axes = plt.subplots(rows, max_cols, figsize=(figsize[0], figsize[1] * rows))
+    axes = np.array(axes).reshape(-1)
+
+    for i, col in enumerate(numeric_cols):
+        ax = axes[i]
+
+        if kind == "box":
+            sns.boxplot(x=target, y=col, data=df_plot, ax=ax)
+
+        elif kind == "violin":
+            sns.violinplot(x=target, y=col, data=df_plot, ax=ax)
+
+        elif kind == "kde":
+            classes = (
+                df_plot[target].cat.categories
+                if ordering is not None
+                else df_plot[target].unique()
+            )
+
+            for cls in classes:
+                subset = df_plot[df_plot[target] == cls]
+                sns.kdeplot(subset[col], label=str(cls), ax=ax)
+
+            ax.legend()
+
+        else:
+            raise ValueError(f"Unknown kind: {kind}")
+
+        ax.set_title(f"{col} vs {target}")
+
+        if show_stats:
+            stats = df_plot.groupby(target)[col].describe()[["mean", "std", "min", "max"]]
+            print(f"\n=== {col} ===")
+            print(stats)
+
+    # Remove unused axes
+    for j in range(i + 1, len(axes)):
+        fig.delaxes(axes[j])
+
+    plt.tight_layout()
+    plt.show()
+
+def plot_numeric_vs_numeric(df: pd.DataFrame, features: list, target: str,kind: str = "scatter",  max_cols: int = 3,figsize: tuple = (15, 5), add_trend: bool = True):
+    """Plot numeric features against a numeric target (scatter/hex/kde)."""
+    if target not in df.columns:
+        raise ValueError(f"Target '{target}' not found")
+
+    if not pd.api.types.is_numeric_dtype(df[target]):
+        raise ValueError("Target must be numeric for this function")
+
+    numeric_cols = [
+        col for col in features
+        if pd.api.types.is_numeric_dtype(df[col])
+    ]
+
+    if not numeric_cols:
+        raise ValueError("No numeric features provided")
+
+    n = len(numeric_cols)
+    rows = int(np.ceil(n / max_cols))
+
+    fig, axes = plt.subplots(rows, max_cols, figsize=(figsize[0], figsize[1] * rows))
+    axes = np.array(axes).reshape(-1)
+
+    for i, col in enumerate(numeric_cols):
+        ax = axes[i]
+
+        if kind == "scatter":
+            sns.scatterplot(x=df[col], y=df[target], ax=ax)
+
+            if add_trend:
+                sns.regplot(
+                    x=df[col],
+                    y=df[target],
+                    ax=ax,
+                    scatter=False
+                )
+
+        elif kind == "hex":
+            ax.hexbin(df[col], df[target], gridsize=30)
+
+        elif kind == "kde":
+            sns.kdeplot(x=df[col], y=df[target], ax=ax)
+
+        else:
+            raise ValueError(f"Unknown kind: {kind}")
+
+        ax.set_title(f"{col} vs {target}")
+
+    for j in range(i + 1, len(axes)):
+        fig.delaxes(axes[j])
+
+    plt.tight_layout()
+    plt.show()
+
+
+
+
+
